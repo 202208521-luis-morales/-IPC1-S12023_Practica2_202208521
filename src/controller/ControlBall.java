@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.geom.Ellipse2D;
 import views.DataModel;
 import views.MenuView;
-import views.SimulationView;
 
 public class ControlBall {
     // En este caso no vamos a verificar si los datos no están vacíos ya que ya lo verificamos en la vista "MenuView"
@@ -13,7 +12,6 @@ public class ControlBall {
     private Double y = 425.0;
     private Color clr = Color.darkGray;
     // Variable para ver si hay que cambiar los labels en la vista SimulationView
-    private int typeLabel = -1;
     
     public void moveBall(int partOfCicle) {
          /* Posiciones del círculo: 
@@ -78,42 +76,34 @@ public class ControlBall {
         switch (partOfCicle) {
             case 130 -> {
                 clr = Color.blue;
-                typeLabel = 1;
             }
             
             case 312 -> {
                 clr = Color.darkGray;
-                typeLabel = 2;
             }
             
             case 364 -> {
                 clr = new Color(0,119,35);
-                typeLabel = 3;
             }
             
             case 533 -> {
                 clr = Color.darkGray;
-                typeLabel = 4;
             }
             
             case 570 -> {
                 clr = Color.magenta;
-                typeLabel = 5;
             }
             
             case 740 -> {
                 clr = Color.darkGray;
-                typeLabel = 6;
             }
             
             case 790 -> {
                 clr = Color.red;
-                typeLabel = 7;
             }
             
             case 976 -> {
                 clr = Color.darkGray;
-                typeLabel = 8;
             }
         }
     }
@@ -131,10 +121,6 @@ public class ControlBall {
 
     public Color getClr() {
         return clr;
-    }
-
-    public int getTypeLabel() {
-        return typeLabel;
     }
     
     

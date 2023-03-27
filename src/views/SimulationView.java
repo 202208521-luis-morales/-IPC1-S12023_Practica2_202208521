@@ -8,6 +8,7 @@ import controller.ControlBall;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -21,11 +22,14 @@ import javax.swing.SwingUtilities;
  * @author DELL
  */
 public class SimulationView extends javax.swing.JFrame {
+
     // En este caso no vamos a verificar si los datos no están vacíos ya que ya lo verificamos en la vista "MenuView"
     public static DataModel[] simulationData = MenuView.simulationData;
-    private ControlBall cb = new ControlBall();
+    private ArrayList<ControlBall> arrCb = new ArrayList<>();
     private int[] squaresCount = new int[4];
     private Thread ballsThread;
+    private Thread mainThread;
+    private int numCircles = 10;
     private boolean stopTime = false;
 
     /**
@@ -34,9 +38,9 @@ public class SimulationView extends javax.swing.JFrame {
     public SimulationView() {
         initComponents();
         this.setLocationRelativeTo(null);
-        
+
         Timer timer = new Timer();
-        
+
         TimerTask clock = new TimerTask() {
             int segundos = 0;
 
@@ -44,8 +48,8 @@ public class SimulationView extends javax.swing.JFrame {
             public void run() {
                 timeOfWindowLabel.setText(secToTimeFormat(segundos));
                 segundos++;
-                
-                if(stopTime==true) {
+
+                if (stopTime == true) {
                     timer.cancel();
                     JOptionPane.showMessageDialog(null, "El proceso ha terminado");
                 }
@@ -57,10 +61,23 @@ public class SimulationView extends javax.swing.JFrame {
         productionTimeLabel.setText("Tiempo: " + simulationData[0].getProduction().getTime() + "s");
         packagingTimeLabel.setText("Tiempo: " + simulationData[0].getPackaging().getTime() + "s");
         departureTimeLabel.setText("Tiempo: " + simulationData[0].getDeparture().getTime() + "s");
-        
 
         SwingUtilities.invokeLater(() -> {
-            doBallsPath();
+            mainThread = new Thread(() -> {
+                for (int i = 0; i < numCircles; i++) {
+                    ControlBall nCb = new ControlBall();
+                    arrCb.add(nCb);
+                    doBallPath(nCb);
+
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(SimulationView.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            });
+
+            mainThread.start();
         });
 
     }
@@ -70,9 +87,16 @@ public class SimulationView extends javax.swing.JFrame {
         super.paint(g);
 
         Graphics2D g2d = (Graphics2D) g;
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2d.setColor(cb.getClr()); // establecer el color del relleno del círculo
-        g2d.fill(cb.getShape());
+
+        //try {
+            for (int i = 0; i < arrCb.size(); i++) {
+                ControlBall cb = arrCb.get(i);
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setColor(cb.getClr()); // establecer el color del relleno del círculo
+                g2d.fill(cb.getShape());
+            }
+        //} catch (Exception e) {
+        //}
     }
 
     /**
@@ -374,13 +398,13 @@ public class SimulationView extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        ballsThread.stop();
+        mainThread.stop();
         this.dispose();
         MenuView mv = new MenuView();
         mv.setVisible(true);
     }//GEN-LAST:event_jButton2ActionPerformed
 
-    public void doBallsPath() {
+    public void doBallPath(ControlBall cb) {
         ballsThread = new Thread(() -> {
             for (int i = 0; i < 1091; i++) {
                 try {
@@ -391,11 +415,16 @@ public class SimulationView extends javax.swing.JFrame {
                             Cuando llega al centro del cuadro 4 => i=868
                             Estos números están explicados en la clase "ControlBall"
                      */
-                    changeLabels(i);
+                    boolean isTheLastFinished = false;
+                    
+                    if((arrCb.indexOf(cb) == (numCircles-1)) && i==1090) {
+                        isTheLastFinished = true;
+                    }
+                    
+                    changeLabels(i, isTheLastFinished);
 
                     if ((i == 238) || (i == 433) || (i == 673) || (i == 868)) {
                         int timeToStop = (i == 238 ? simulationData[0].getInventary().getTime() : (i == 433 ? simulationData[0].getProduction().getTime() : (i == 673 ? simulationData[0].getPackaging().getTime() : (i == 868 ? simulationData[0].getDeparture().getTime() : -1))));
-                        int typeOfLabel = cb.getTypeLabel();
 
                         for (int j = 0; j < timeToStop; j++) {
                             System.out.println(j);
@@ -415,7 +444,7 @@ public class SimulationView extends javax.swing.JFrame {
         ballsThread.start();
     }
 
-    private synchronized void changeLabels(int phase) {
+    private synchronized void changeLabels(int phase, boolean isTheLastFinished) {
         switch (phase) {
             case 130 -> {
                 squaresCount[0]++;
@@ -456,21 +485,23 @@ public class SimulationView extends javax.swing.JFrame {
                 squaresCount[3]--;
                 departureDataLabel.setText("Salida: " + squaresCount[3]);
             }
-            
+
             case 1090 -> {
-                stopTime = true;
+                if(isTheLastFinished) {
+                    stopTime = true;
+                }
             }
         }
     }
-    
+
     private String secToTimeFormat(int segundos) {
-         // Convertir los segundos en minutos y segundos
+        // Convertir los segundos en minutos y segundos
         long minutos = TimeUnit.SECONDS.toMinutes(segundos);
         segundos -= TimeUnit.MINUTES.toSeconds(minutos);
 
         // Formatear el resultado como una cadena de texto
         String tiempo = String.format("%02d:%02d", minutos, segundos);
-        
+
         return tiempo;
     }
 
