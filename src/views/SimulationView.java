@@ -16,6 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import util.Utils;
 
 /**
  *
@@ -26,10 +27,10 @@ public class SimulationView extends javax.swing.JFrame {
     // En este caso no vamos a verificar si los datos no están vacíos ya que ya lo verificamos en la vista "MenuView"
     public static DataModel[] simulationData = MenuView.simulationData;
     private ArrayList<ControlBall> arrCb = new ArrayList<>();
-    private int[] squaresCount = new int[4];
+    private int[] squaresCount = new int[6];
     private Thread ballsThread;
     private Thread mainThread;
-    private int numCircles = 10;
+    private int numCircles = 30;
     private boolean stopTime = false;
 
     /**
@@ -114,7 +115,7 @@ public class SimulationView extends javax.swing.JFrame {
         jButton2 = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel9 = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
+        endCountLabel = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
@@ -123,7 +124,7 @@ public class SimulationView extends javax.swing.JFrame {
         departureDataLabel = new javax.swing.JLabel();
         inventaryDataLabel = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
-        jLabel8 = new javax.swing.JLabel();
+        beginningCountLabel = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
         productionTimeLabel = new javax.swing.JLabel();
@@ -159,8 +160,8 @@ public class SimulationView extends javax.swing.JFrame {
         jLabel9.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jLabel9.setText("Final:");
 
-        jLabel10.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jLabel10.setText("23");
+        endCountLabel.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        endCountLabel.setText("0");
 
         jPanel4.setBackground(new java.awt.Color(192, 234, 255));
         jPanel4.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -230,8 +231,8 @@ public class SimulationView extends javax.swing.JFrame {
             .addGap(0, 147, Short.MAX_VALUE)
         );
 
-        jLabel8.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jLabel8.setText("23");
+        beginningCountLabel.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        beginningCountLabel.setText("0");
 
         jLabel7.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jLabel7.setText("Inicio:");
@@ -289,7 +290,7 @@ public class SimulationView extends javax.swing.JFrame {
                                 .addGap(25, 25, 25))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel8)
+                                    .addComponent(beginningCountLabel)
                                     .addComponent(jLabel7))
                                 .addGap(16, 16, 16))))))
             .addGroup(jPanel2Layout.createSequentialGroup()
@@ -297,7 +298,7 @@ public class SimulationView extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel12)
                     .addComponent(jLabel9)
-                    .addComponent(jLabel10))
+                    .addComponent(endCountLabel))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
@@ -337,12 +338,12 @@ public class SimulationView extends javax.swing.JFrame {
                                 .addGap(18, 18, 18)
                                 .addComponent(jLabel7)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(beginningCountLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(0, 0, Short.MAX_VALUE)))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel9)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel10)
+                .addComponent(endCountLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel12)
                 .addContainerGap(14, Short.MAX_VALUE))
@@ -394,7 +395,21 @@ public class SimulationView extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-
+        String result = JOptionPane.showInputDialog(null, "¿Está seguro de descargar la reporte en HTML? \nPor defecto, se descarga en la ruta mostrada, pero si es necesario se puede sobreescribir (no se \nasegura que sirva, ya que es una sustitución simple, no con una librería especializada en rutas, \nasí que se sugiere que se usen rutas que directamente funcionen con su SO) \nSe recomienda que sean rutas de Windows y sin / al final", "C:\\Users\\DELL\\Desktop");
+        if (result != null) {
+            if ("".equals(result)) {
+                JOptionPane.showMessageDialog(null, "Error: Escriba una ruta", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                Utils.generateHTMLReport(result, 
+                        new DataModel(
+                                new SubDataModel(simulationData[0].getInventary().getTime(), simulationData[0].getInventary().getCost()), 
+                                new SubDataModel(simulationData[0].getProduction().getTime(), simulationData[0].getProduction().getCost()), 
+                                new SubDataModel(simulationData[0].getPackaging().getTime(), simulationData[0].getPackaging().getCost()), 
+                                new SubDataModel(simulationData[0].getDeparture().getTime(), simulationData[0].getDeparture().getCost())
+                        )
+                );
+            }
+        }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
@@ -445,7 +460,17 @@ public class SimulationView extends javax.swing.JFrame {
 
     private synchronized void changeLabels(int phase, boolean isTheLastFinished) {
         switch (phase) {
+            case 0 -> {
+                squaresCount[4]++;
+                beginningCountLabel.setText(String.valueOf(squaresCount[4]));
+                
+            }
+            
             case 130 -> {
+                squaresCount[4]--;
+                beginningCountLabel.setText(String.valueOf(squaresCount[4]));
+                
+                
                 squaresCount[0]++;
                 inventaryDataLabel.setText("Inventario: " + squaresCount[0]);
             }
@@ -486,6 +511,9 @@ public class SimulationView extends javax.swing.JFrame {
             }
 
             case 1090 -> {
+                squaresCount[5]++;
+                endCountLabel.setText(String.valueOf(squaresCount[5]));
+                
                 if(isTheLastFinished) {
                     stopTime = true;
                 }
@@ -540,18 +568,18 @@ public class SimulationView extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel beginningCountLabel;
     private javax.swing.JLabel departureDataLabel;
     private javax.swing.JLabel departureTimeLabel;
+    private javax.swing.JLabel endCountLabel;
     private javax.swing.JLabel inventaryDataLabel;
     private javax.swing.JLabel inventaryTimeLabel;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
