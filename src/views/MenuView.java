@@ -15,6 +15,7 @@ import javax.swing.SwingUtilities;
  * @author DELL
  */
 public class MenuView extends javax.swing.JFrame {
+
     public static DataModel[] simulationData = new DataModel[1];
     private static MenuView menuV;
 
@@ -23,12 +24,7 @@ public class MenuView extends javax.swing.JFrame {
      */
     public MenuView() {
         initComponents();
-        MenuView.simulationData[0] = (new DataModel(
-                new SubDataModel(0, 0.0),
-                new SubDataModel(0, 0.0),
-                new SubDataModel(0, 0.0),
-                new SubDataModel(0, 0.0)));
-        
+
         this.setLocationRelativeTo(null);
     }
 
@@ -182,7 +178,7 @@ public class MenuView extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        /*if (inventaryTimeTextField.getText().isEmpty()
+        if (inventaryTimeTextField.getText().isEmpty()
                 || productionTimeTextField.getText().isEmpty()
                 || packagingTimeTextField.getText().isEmpty()
                 || packagingTimeTextField.getText().isEmpty()
@@ -192,22 +188,25 @@ public class MenuView extends javax.swing.JFrame {
                 || inventaryCostTextField.getText().isEmpty()
                 || departureCostTextField.getText().isEmpty()) {
             JOptionPane.showMessageDialog(null, "Error: Debe de llenar todos los campos", "Error", JOptionPane.ERROR_MESSAGE);
-        } else */
-            /*MenuView.simulationData[0] = (new DataModel(
-                new SubDataModel(Integer.parseInt(inventaryTimeTextField.getText()), Double.parseDouble(inventaryCostTextField.getText())),
-                new SubDataModel(Integer.parseInt(productionTimeTextField.getText()), Double.parseDouble(productionCostTextField.getText())),
-                new SubDataModel(Integer.parseInt(packagingTimeTextField.getText()), Double.parseDouble(inventaryCostTextField.getText())),
-                new SubDataModel(Integer.parseInt(departureTimeTextField.getText()), Double.parseDouble(departureCostTextField.getText()))));
-                */
-            this.dispose();
-            
-            Thread td = new Thread(() -> {
-                SimulationView sm = new SimulationView();
-                sm.setVisible(true);
-            });
-            
-            td.start();
-        //}
+        } else {
+            try {
+                MenuView.simulationData[0] = (new DataModel(
+                        new SubDataModel(Integer.parseInt(inventaryTimeTextField.getText()), Integer.parseInt(inventaryCostTextField.getText())),
+                        new SubDataModel(Integer.parseInt(productionTimeTextField.getText()), Integer.parseInt(productionCostTextField.getText())),
+                        new SubDataModel(Integer.parseInt(packagingTimeTextField.getText()), Integer.parseInt(inventaryCostTextField.getText())),
+                        new SubDataModel(Integer.parseInt(departureTimeTextField.getText()), Integer.parseInt(departureCostTextField.getText()))));
+                this.dispose();
+
+                Thread td = new Thread(() -> {
+                    SimulationView sm = new SimulationView();
+                    sm.setVisible(true);
+                });
+
+                td.start();
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(null, "Error: Uno de los datos ingresados no fue un entero. \nÚnicamente puede ingresar enteros", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /**

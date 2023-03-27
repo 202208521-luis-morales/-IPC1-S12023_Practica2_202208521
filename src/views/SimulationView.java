@@ -427,7 +427,6 @@ public class SimulationView extends javax.swing.JFrame {
                         int timeToStop = (i == 238 ? simulationData[0].getInventary().getTime() : (i == 433 ? simulationData[0].getProduction().getTime() : (i == 673 ? simulationData[0].getPackaging().getTime() : (i == 868 ? simulationData[0].getDeparture().getTime() : -1))));
 
                         for (int j = 0; j < timeToStop; j++) {
-                            System.out.println(j);
                             Thread.sleep(1000);
                         }
                         //Thread.sleep(timeToStop*1000);
