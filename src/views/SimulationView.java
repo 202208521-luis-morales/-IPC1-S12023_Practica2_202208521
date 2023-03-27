@@ -8,8 +8,12 @@ import controller.ControlBall;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 /**
@@ -17,8 +21,12 @@ import javax.swing.SwingUtilities;
  * @author DELL
  */
 public class SimulationView extends javax.swing.JFrame {
-
+    // En este caso no vamos a verificar si los datos no están vacíos ya que ya lo verificamos en la vista "MenuView"
+    public static DataModel[] simulationData = MenuView.simulationData;
     private ControlBall cb = new ControlBall();
+    private int[] squaresCount = new int[4];
+    private Thread ballsThread;
+    private boolean stopTime = false;
 
     /**
      * Creates new form SimulationView
@@ -26,6 +34,30 @@ public class SimulationView extends javax.swing.JFrame {
     public SimulationView() {
         initComponents();
         this.setLocationRelativeTo(null);
+        
+        Timer timer = new Timer();
+        
+        TimerTask clock = new TimerTask() {
+            int segundos = 0;
+
+            @Override
+            public void run() {
+                timeOfWindowLabel.setText(secToTimeFormat(segundos));
+                segundos++;
+                
+                if(stopTime==true) {
+                    timer.cancel();
+                    JOptionPane.showMessageDialog(null, "El proceso ha terminado");
+                }
+            }
+        };
+        timer.schedule(clock, 0, 1000);
+
+        inventaryTimeLabel.setText("Tiempo: " + simulationData[0].getInventary().getTime() + "s");
+        productionTimeLabel.setText("Tiempo: " + simulationData[0].getProduction().getTime() + "s");
+        packagingTimeLabel.setText("Tiempo: " + simulationData[0].getPackaging().getTime() + "s");
+        departureTimeLabel.setText("Tiempo: " + simulationData[0].getDeparture().getTime() + "s");
+        
 
         SwingUtilities.invokeLater(() -> {
             doBallsPath();
@@ -53,7 +85,7 @@ public class SimulationView extends javax.swing.JFrame {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
+        timeOfWindowLabel = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
@@ -62,18 +94,18 @@ public class SimulationView extends javax.swing.JFrame {
         jPanel4 = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
+        packagingDataLabel = new javax.swing.JLabel();
+        productionDataLabel = new javax.swing.JLabel();
+        departureDataLabel = new javax.swing.JLabel();
+        inventaryDataLabel = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
-        jLabel11 = new javax.swing.JLabel();
-        jLabel13 = new javax.swing.JLabel();
-        jLabel14 = new javax.swing.JLabel();
-        jLabel15 = new javax.swing.JLabel();
+        productionTimeLabel = new javax.swing.JLabel();
+        packagingTimeLabel = new javax.swing.JLabel();
+        departureTimeLabel = new javax.swing.JLabel();
+        inventaryTimeLabel = new javax.swing.JLabel();
         jLabel16 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -81,8 +113,8 @@ public class SimulationView extends javax.swing.JFrame {
         jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel1.setText("Tiempo transcurrido:");
 
-        jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jLabel2.setText("12:34");
+        timeOfWindowLabel.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        timeOfWindowLabel.setText("12:34");
 
         jButton1.setText("Reporte");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -92,6 +124,11 @@ public class SimulationView extends javax.swing.JFrame {
         });
 
         jButton2.setText("Regresar");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
         jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
@@ -143,17 +180,17 @@ public class SimulationView extends javax.swing.JFrame {
             .addGap(0, 147, Short.MAX_VALUE)
         );
 
-        jLabel3.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jLabel3.setText("Empaquetado: 30");
+        packagingDataLabel.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        packagingDataLabel.setText("Empaquetado: 0");
 
-        jLabel4.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jLabel4.setText("Producción: 2");
+        productionDataLabel.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        productionDataLabel.setText("Producción: 0");
 
-        jLabel5.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jLabel5.setText("Salida: 4");
+        departureDataLabel.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        departureDataLabel.setText("Salida: 0");
 
-        jLabel6.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jLabel6.setText("Inventario: 5");
+        inventaryDataLabel.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        inventaryDataLabel.setText("Inventario: 0");
 
         jPanel3.setBackground(new java.awt.Color(255, 204, 204));
         jPanel3.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -177,13 +214,13 @@ public class SimulationView extends javax.swing.JFrame {
 
         jLabel12.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/caret-left-solid (1) (1) (1) (1).png"))); // NOI18N
 
-        jLabel11.setText("Tiempo: #s");
+        productionTimeLabel.setText("Tiempo: #s");
 
-        jLabel13.setText("Tiempo: 100s");
+        packagingTimeLabel.setText("Tiempo: #s");
 
-        jLabel14.setText("Tiempo: #s");
+        departureTimeLabel.setText("Tiempo: #s");
 
-        jLabel15.setText("Tiempo: #s");
+        inventaryTimeLabel.setText("Tiempo: #s");
 
         jLabel16.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/caret-left-solid (1) (1) (1) (1).png"))); // NOI18N
 
@@ -195,30 +232,30 @@ public class SimulationView extends javax.swing.JFrame {
                 .addGap(151, 151, 151)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel3)
+                        .addComponent(packagingDataLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel13))
+                        .addComponent(packagingTimeLabel))
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                         .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel5)
+                        .addComponent(departureDataLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel14)))
+                        .addComponent(departureTimeLabel)))
                 .addGap(35, 35, 35)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel4)
+                        .addComponent(productionDataLabel)
                         .addGap(71, 71, 71)
-                        .addComponent(jLabel11)
+                        .addComponent(productionTimeLabel)
                         .addContainerGap(167, Short.MAX_VALUE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                 .addGroup(jPanel2Layout.createSequentialGroup()
-                                    .addComponent(jLabel6)
+                                    .addComponent(inventaryDataLabel)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jLabel15))
+                                    .addComponent(inventaryTimeLabel))
                                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -245,29 +282,29 @@ public class SimulationView extends javax.swing.JFrame {
                 .addGap(29, 29, 29)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel3)
+                        .addComponent(packagingDataLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(21, 21, 21)
-                                .addComponent(jLabel5))
+                                .addComponent(departureDataLabel))
                             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(jLabel14)
-                                .addComponent(jLabel6)))
+                                .addComponent(departureTimeLabel)
+                                .addComponent(inventaryDataLabel)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel4)
-                            .addComponent(jLabel11)
-                            .addComponent(jLabel13))
+                            .addComponent(productionDataLabel)
+                            .addComponent(productionTimeLabel)
+                            .addComponent(packagingTimeLabel))
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jLabel15)
+                                .addComponent(inventaryTimeLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel2Layout.createSequentialGroup()
@@ -299,12 +336,12 @@ public class SimulationView extends javax.swing.JFrame {
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(183, 183, 183)
+                        .addGap(229, 229, 229)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(46, 46, 46)
-                                .addComponent(jLabel2)))
+                                .addGap(50, 50, 50)
+                                .addComponent(timeOfWindowLabel)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -323,7 +360,7 @@ public class SimulationView extends javax.swing.JFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel1)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jLabel2)))))
+                                .addComponent(timeOfWindowLabel)))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(17, Short.MAX_VALUE))
@@ -336,23 +373,107 @@ public class SimulationView extends javax.swing.JFrame {
 
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    public void doBallsPath() {
-        Thread td;
-            td = new Thread(() -> {
-                for (int i = 0; i < 1091; i++) {
-                    try {
-                        cb.moveBall(i);
-                        repaint();
-                        Thread.sleep(7);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(SimulationView.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            });
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        ballsThread.stop();
+        this.dispose();
+        MenuView mv = new MenuView();
+        mv.setVisible(true);
+    }//GEN-LAST:event_jButton2ActionPerformed
 
-            td.start();
+    public void doBallsPath() {
+        ballsThread = new Thread(() -> {
+            for (int i = 0; i < 1091; i++) {
+                try {
+                    /*
+                            Cuando llega al centro del cuadro 1 => i=238
+                            Cuando llega al centro del cuadro 2 => i=433
+                            Cuando llega al centro del cuadro 3 => i=673
+                            Cuando llega al centro del cuadro 4 => i=868
+                            Estos números están explicados en la clase "ControlBall"
+                     */
+                    changeLabels(i);
+
+                    if ((i == 238) || (i == 433) || (i == 673) || (i == 868)) {
+                        int timeToStop = (i == 238 ? simulationData[0].getInventary().getTime() : (i == 433 ? simulationData[0].getProduction().getTime() : (i == 673 ? simulationData[0].getPackaging().getTime() : (i == 868 ? simulationData[0].getDeparture().getTime() : -1))));
+                        int typeOfLabel = cb.getTypeLabel();
+
+                        for (int j = 0; j < timeToStop; j++) {
+                            System.out.println(j);
+                            Thread.sleep(1000);
+                        }
+                        //Thread.sleep(timeToStop*1000);
+                    }
+                    cb.moveBall(i);
+                    repaint();
+                    Thread.sleep(7);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(SimulationView.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+
+        ballsThread.start();
+    }
+
+    private synchronized void changeLabels(int phase) {
+        switch (phase) {
+            case 130 -> {
+                squaresCount[0]++;
+                inventaryDataLabel.setText("Inventario: " + squaresCount[0]);
+            }
+
+            case 312 -> {
+                squaresCount[0]--;
+                inventaryDataLabel.setText("Inventario: " + squaresCount[0]);
+            }
+
+            case 364 -> {
+                squaresCount[1]++;
+                productionDataLabel.setText("Producción: " + squaresCount[1]);
+            }
+
+            case 533 -> {
+                squaresCount[1]--;
+                productionDataLabel.setText("Producción: " + squaresCount[1]);
+            }
+
+            case 570 -> {
+                squaresCount[2]++;
+                packagingDataLabel.setText("Empaquetado: " + squaresCount[2]);
+            }
+
+            case 740 -> {
+                squaresCount[2]--;
+                packagingDataLabel.setText("Empaquetado: " + squaresCount[2]);
+            }
+
+            case 790 -> {
+                squaresCount[3]++;
+                departureDataLabel.setText("Salida: " + squaresCount[3]);
+            }
+
+            case 976 -> {
+                squaresCount[3]--;
+                departureDataLabel.setText("Salida: " + squaresCount[3]);
+            }
+            
+            case 1090 -> {
+                stopTime = true;
+            }
+        }
     }
     
+    private String secToTimeFormat(int segundos) {
+         // Convertir los segundos en minutos y segundos
+        long minutos = TimeUnit.SECONDS.toMinutes(segundos);
+        segundos -= TimeUnit.MINUTES.toSeconds(minutos);
+
+        // Formatear el resultado como una cadena de texto
+        String tiempo = String.format("%02d:%02d", minutos, segundos);
+        
+        return tiempo;
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -389,21 +510,16 @@ public class SimulationView extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel departureDataLabel;
+    private javax.swing.JLabel departureTimeLabel;
+    private javax.swing.JLabel inventaryDataLabel;
+    private javax.swing.JLabel inventaryTimeLabel;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel13;
-    private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
@@ -412,6 +528,11 @@ public class SimulationView extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel7;
+    private javax.swing.JLabel packagingDataLabel;
+    private javax.swing.JLabel packagingTimeLabel;
+    private javax.swing.JLabel productionDataLabel;
+    private javax.swing.JLabel productionTimeLabel;
+    private javax.swing.JLabel timeOfWindowLabel;
     // End of variables declaration//GEN-END:variables
 
 }

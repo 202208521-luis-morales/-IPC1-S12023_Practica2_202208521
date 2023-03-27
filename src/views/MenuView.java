@@ -5,6 +5,8 @@
 package views;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -13,7 +15,6 @@ import javax.swing.SwingUtilities;
  * @author DELL
  */
 public class MenuView extends javax.swing.JFrame {
-
     public static DataModel[] simulationData = new DataModel[1];
     private static MenuView menuV;
 
@@ -22,6 +23,12 @@ public class MenuView extends javax.swing.JFrame {
      */
     public MenuView() {
         initComponents();
+        MenuView.simulationData[0] = (new DataModel(
+                new SubDataModel(0, 0.0),
+                new SubDataModel(0, 0.0),
+                new SubDataModel(0, 0.0),
+                new SubDataModel(0, 0.0)));
+        
         this.setLocationRelativeTo(null);
     }
 
